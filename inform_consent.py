@@ -2,7 +2,7 @@ import wx
 import webbrowser
 import itertools
 from random import shuffle
-import time
+import pyautogui
 from screeninfo import get_monitors
 
 SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
@@ -11,7 +11,7 @@ class InformedConsentFrame(wx.Frame):
     def __init__(self, parent, title):
         super(InformedConsentFrame, self).__init__(parent, title=title, size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)))
         self.panel = wx.Panel(self)
-        self.panel.SetBackgroundColour(wx.Colour(0, 0, 0))
+        self.panel.SetBackgroundColour(wx.Colour(49, 50, 68))
         self.current_button = None
         self.last_button = None
         self.initialize_ui()
@@ -89,44 +89,46 @@ class Experiment(wx.Frame):
     def __init__(self, parent, title):
         super(Experiment, self).__init__(parent, title=title, size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)))
         self.panel = wx.Panel(self)
+        self.panel.SetBackgroundColour(wx.Colour(49, 50, 68))
         self.button_data = generate_button_types()
         self.current_button_index = 0
         self.create_button()
         self.ShowFullScreen(True)
 
     def create_button(self):
-        if self.current_button_index < len(self.button_data):
-            size, distance, side = self.button_data[self.current_button_index]
-            button = wx.Button(self.panel, label=f"Button {self.current_button_index + 1}", size=wx.Size(size, size))
-            pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
-            pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2)) 
-            print(f"Generating at ({pos_x}, {pos_y})")
-            button.SetPosition((pos_x, pos_y))
+        # End of the experiment check
+        if self.current_button_index >= len(self.button_data): self.Close()
+        # Set the mouse position
+        pyautogui.moveTo(SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2)
+        # Destruct the current button data
+        size, distance, side = self.button_data[self.current_button_index]
+        # Create the button
+        button = wx.Button(self.panel, label=f" ", size=wx.Size(size, size))
+        # Calculate where it should be on the screen
+        pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
+        # For the y-position, we need to subtract by half the size to actually center on the screen
+        pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2)) 
+        button.SetPosition((pos_x, pos_y))
 
-            button.Bind(wx.EVT_BUTTON, self.on_button_click)
-
-            self.current_button_index += 1
-        else:
-            print("Done with experiment!")
+        button.Bind(wx.EVT_BUTTON, self.on_button_click)
+        # Increment the index
+        self.current_button_index += 1
 
     def on_button_click(self, event):
         event.GetEventObject().Destroy()
         self.create_button()
 
 def generate_button_types() -> list[list[int]]:
-    sizes = [64, 128, 192, 256]
-    distance = [100, 200, 300, 400]
+    sizes = [128, 192, 256, 320]
+    distance = [300, 400, 500, 600]
     side = [-1, 1] # -1 = left, 1 = right
 
     # Generate all possible combinations of size, distance, and direction for buttons
     all_combinations = list(itertools.product(sizes, distance, side))
-
     # Replicate the combinations list 10 times to create a larger pool of options
     repeated_combinations = [all_combinations] * 10
-
     # Flatten the list of lists into a single list
     flattened_combinations = list(itertools.chain.from_iterable(repeated_combinations))
-
     # Shuffle the list to randomize the order of options
     shuffle(flattened_combinations)
 
