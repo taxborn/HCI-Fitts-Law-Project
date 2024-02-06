@@ -1,14 +1,21 @@
 import wx
 import webbrowser
+import itertools
+from random import shuffle
+import time
+from screeninfo import get_monitors
 
-class FittsLawExperiment(wx.Frame):
+SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
+
+class InformedConsentFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(FittsLawExperiment, self).__init__(parent, title=title, size=(800, 600))
+        super(InformedConsentFrame, self).__init__(parent, title=title, size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)))
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour(wx.Colour(0, 0, 0))
+        self.current_button = None
+        self.last_button = None
         self.initialize_ui()
         self.Centre()
-        self.Show()
 
     def initialize_ui(self):
         #vertical boxsizer which contains all the buttons
@@ -52,7 +59,7 @@ class FittsLawExperiment(wx.Frame):
         self.panel.SetSizer(vbox)
 
     def on_open_consent_form(self, event):
-        consent_form_path = "C:\\Users\\Rania\\Documents\\SpringProject2024\\HCI-Fitts-Law-Project\\Sample Fitts' Law Informed Consent.pdf"
+        consent_form_path = "Sample Fitts' Law Informed Consent.pdf"
         webbrowser.open(consent_form_path)
         self.agree_button.Show()
         self.disagree_button.Show()
@@ -72,8 +79,61 @@ class FittsLawExperiment(wx.Frame):
 
     def on_start(self, event):
         print("The experiment has started.")
+        self.start_button.Hide()
+        exp = Experiment(None, "Experiment")
+        exp.Show()
+        self.Close()
+
+
+class Experiment(wx.Frame):
+    def __init__(self, parent, title):
+        super(Experiment, self).__init__(parent, title=title, size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)))
+        self.panel = wx.Panel(self)
+        self.button_data = generate_button_types()
+        self.current_button_index = 0
+        self.create_button()
+        self.ShowFullScreen(True)
+
+    def create_button(self):
+        if self.current_button_index < len(self.button_data):
+            size, distance, side = self.button_data[self.current_button_index]
+            button = wx.Button(self.panel, label=f"Button {self.current_button_index + 1}", size=wx.Size(size, size))
+            pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
+            pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2)) 
+            print(f"Generating at ({pos_x}, {pos_y})")
+            button.SetPosition((pos_x, pos_y))
+
+            button.Bind(wx.EVT_BUTTON, self.on_button_click)
+
+            self.current_button_index += 1
+        else:
+            print("Done with experiment!")
+
+    def on_button_click(self, event):
+        event.GetEventObject().Destroy()
+        self.create_button()
+
+def generate_button_types() -> list[list[int]]:
+    sizes = [64, 128, 192, 256]
+    distance = [100, 200, 300, 400]
+    side = [-1, 1] # -1 = left, 1 = right
+
+    # Generate all possible combinations of size, distance, and direction for buttons
+    all_combinations = list(itertools.product(sizes, distance, side))
+
+    # Replicate the combinations list 10 times to create a larger pool of options
+    repeated_combinations = [all_combinations] * 10
+
+    # Flatten the list of lists into a single list
+    flattened_combinations = list(itertools.chain.from_iterable(repeated_combinations))
+
+    # Shuffle the list to randomize the order of options
+    shuffle(flattened_combinations)
+
+    return flattened_combinations
 
 if __name__ == "__main__":
     app = wx.App(False)
-    frame = FittsLawExperiment( None, "Fitt's Law Project")
+    ic = InformedConsentFrame(None, "Fitt's Law Project")
+    ic.Show()
     app.MainLoop()
