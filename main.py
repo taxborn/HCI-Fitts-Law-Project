@@ -4,6 +4,7 @@ import itertools
 from random import shuffle
 import mouse
 from screeninfo import get_monitors
+from csv_data_collector import CSVDataCollector
 
 SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
 
@@ -94,6 +95,8 @@ class Experiment(wx.Frame):
         self.create_button()
         self.ShowFullScreen(True)
 
+        self.csv = CSVDataCollector()
+
     def create_button(self):
         # End of the experiment check
         if self.current_button_index >= len(self.button_data): self.Close()
@@ -115,7 +118,15 @@ class Experiment(wx.Frame):
 
     def on_button_click(self, event):
         event.GetEventObject().Destroy()
+        self.csv.add_data(self.button_data[self.current_button_index][1],self.button_data[self.current_button_index][0],self.button_data[self.current_button_index][2],0,0,0)
+        if self.current_button_index == 320:
+            self.end_experiment()
         self.create_button()
+
+    def end_experiment(self):
+        self.csv.create_csv("Fitts Law Data.csv")
+        self.Close()
+
 
 def generate_button_types() -> list[tuple[int, int, int]]:
     sizes = [128, 192, 256, 320]

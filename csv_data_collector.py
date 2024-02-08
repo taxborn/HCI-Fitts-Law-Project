@@ -20,6 +20,13 @@ class CSVDataCollector():
         self.data.append([distance,size,direction,time,distanceTraveled,errors])
 
     def create_csv(self,fileName):
-        with open(fileName,'x',newline='') as file:
-            writer = csv.writer(file)
-            writer.writerows(self.data)
+        fileCreated = False
+        fileNumber = 1
+        while fileCreated == False:
+            try:
+                with open(f"{fileNumber} - {fileName}",'x',newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerows(self.data)
+                    fileCreated = True
+            except FileExistsError:
+                fileNumber += 1
