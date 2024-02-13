@@ -12,7 +12,7 @@ SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
 BUTTON_SIZES = [64, 128, 196, 256]
 BUTTON_DISTANCES = [300, 400, 500, 600]
 BUTTON_SIDES = [-1, 1]  # -1 = left, 1 = right
-TRAILS_PER_CONFIGURATION = 1
+TRAILS_PER_CONFIGURATION = 10
 
 
 class InformedConsentFrame(wx.Frame):
