@@ -157,7 +157,7 @@ class Experiment(wx.Frame):
         # End of the experiment check
         if self.current_button_index >= len(self.button_data) - 1:
             self.csv.save("Fitts Law Data")
-            end = CompletedPage(None,"CompletedPage")
+            end = CompletedPage(None, "CompletedPage")
             end.Show()
             self.Close()
             return
