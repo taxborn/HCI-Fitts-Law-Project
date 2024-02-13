@@ -79,7 +79,7 @@ class InformedConsentFrame(wx.Frame):
         self.panel.SetSizer(vbox)
 
     def on_open_consent_form(self, event):
-        webbrowser.open("https://github.com/taxborn/HCI-Fitts-Law-Project/blob/main/Sample%20Fitts'%20Law%20Informed%20Consent.pdf")
+        webbrowser.open("https://github.com/taxborn/HCI-Fitts-Law-Project/blob/main/Fitts'%20Law%20Informed%20Consent.pdf")
         self.agree_button.Show()
         self.disagree_button.Show()
         self.panel.Layout()
