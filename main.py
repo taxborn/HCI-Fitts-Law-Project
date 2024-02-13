@@ -14,7 +14,7 @@ SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
 BUTTON_SIZES = [64, 128, 196, 256]
 BUTTON_DISTANCES = [300, 400, 500, 600]
 BUTTON_SIDES = [-1, 1]  # -1 = left, 1 = right
-TRAILS_PER_CONFIGURATION = 1
+TRAILS_PER_CONFIGURATION = 10
 
 
 class InformedConsentFrame(wx.Frame):
@@ -79,7 +79,9 @@ class InformedConsentFrame(wx.Frame):
         self.panel.SetSizer(vbox)
 
     def on_open_consent_form(self, event):
-        webbrowser.open("https://github.com/taxborn/HCI-Fitts-Law-Project/blob/main/Fitts'%20Law%20Informed%20Consent.pdf")
+        webbrowser.open(
+            "https://github.com/taxborn/HCI-Fitts-Law-Project/blob/main/Fitts'%20Law%20Informed%20Consent.pdf"
+        )
         self.agree_button.Show()
         self.disagree_button.Show()
         self.panel.Layout()

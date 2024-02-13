@@ -1,3 +1,4 @@
+import os
 import csv
 import random
 
@@ -25,8 +26,13 @@ class CSVDataCollector:
         self.data.append([*args])
 
     def save(self, fileName):
+        # Create the data directory if it doesn't exist
+        if not os.path.exists("data"):
+            os.makedirs("data", exist_ok=True)
+
         fileCreated = False
         fileNumber = random.randint(1, 1000000)
+
         while fileCreated == False:
             try:
                 with open(
