@@ -35,6 +35,6 @@ class CSVDataCollector:
                     writer = csv.writer(file)
                     writer.writerows(self.data)
                     fileCreated = True
-            # If for whatever reason the file alreay exists,
+            # If for whatever reason the file already exists,
             except FileExistsError:
                 fileNumber += 1

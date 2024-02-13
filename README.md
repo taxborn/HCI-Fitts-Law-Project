@@ -21,6 +21,8 @@ Then, you just need to run the main script:
 ```
 python main.py
 ```
+
+Alternatively, there is an executable provided. You will need the consent form in the same location to access this.
 ## The Data
 Snippet from the [example](./data/Example%20-%20Fitts%20Law%20Data.csv)
 ```csv
@@ -32,4 +34,7 @@ Distance ,Size ,Direction ,Time               ,Distance Traveled   ,Errors
      400 , 256 ,-1        ,0.5160679817199707 ,117.18361660232202  ,     0
 ...
 ```
-The distance (in pixels) is selected from a list of 4 options, 
+The distance and size (in pixels) columns are each selected from a list of 4 options defined at the top of [main.py](./main.py).
+The next option, direction, denotes which side of the screen the button appeared on, **-1 means left, 1 means right**. The distance
+traveled is measured by its *Euclidean distance* from the center. Finally, errors is the amount of misclicks before correctly clicking
+the button.

@@ -79,7 +79,7 @@ class InformedConsentFrame(wx.Frame):
         self.panel.SetSizer(vbox)
 
     def on_open_consent_form(self, event):
-        webbrowser.open("Sample Fitts' Law Informed Consent.pdf")
+        webbrowser.open("https://github.com/taxborn/HCI-Fitts-Law-Project/blob/main/Sample%20Fitts'%20Law%20Informed%20Consent.pdf")
         self.agree_button.Show()
         self.disagree_button.Show()
         self.panel.Layout()
@@ -126,7 +126,7 @@ class Experiment(wx.Frame):
         self.create_next_button()
         self.ShowFullScreen(True)
         self.time = time.time()
-    
+
     def initialize_ui(self):
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour(BACKGROUND_COLOR)
@@ -176,7 +176,9 @@ class Experiment(wx.Frame):
         )
 
         # Add the data to the CSV
-        self.csv.add_data(distance, size, side, elapsed_time, distance_traveled, self.current_errors)
+        self.csv.add_data(
+            distance, size, side, elapsed_time, distance_traveled, self.current_errors
+        )
         # Destroy the button
         event.GetEventObject().Destroy()
         # Increment the index

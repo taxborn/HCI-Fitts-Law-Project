@@ -13,19 +13,33 @@ class CompletedPage(wx.Frame):
     def initialize_ui(self):
         # the top message
         vbox = wx.BoxSizer(wx.VERTICAL)
-        message = wx.StaticText(self.panel, -1, "Congratulations! You have completed the Fitts' Law Experiment.\n "
-                                                "Thank you for your participation!", style=wx.ALIGN_CENTER)
+        message = wx.StaticText(
+            self.panel,
+            -1,
+            "Congratulations! You have completed the Fitts' Law Experiment.\n "
+            "Thank you for your participation!",
+            style=wx.ALIGN_CENTER,
+        )
 
         message.SetForegroundColour((255, 255, 255))
-        font = wx.Font(20, family=wx.FONTFAMILY_MODERN, style=0, weight=90,
-                       underline=False, faceName="", encoding=wx.FONTENCODING_DEFAULT)
+        font = wx.Font(
+            20,
+            family=wx.FONTFAMILY_MODERN,
+            style=0,
+            weight=90,
+            underline=False,
+            faceName="",
+            encoding=wx.FONTENCODING_DEFAULT,
+        )
         message.SetFont(font)
         vbox.Add(message, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 90)
 
         # Close Button
         self.close_button = wx.Button(self.panel, label="Close", size=(150, 50))
         self.close_button.Bind(wx.EVT_BUTTON, self.on_close)
-        vbox.Add(self.close_button, flag=wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, border=100)
+        vbox.Add(
+            self.close_button, flag=wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, border=100
+        )
 
         self.panel.SetSizer(vbox)
 
@@ -40,5 +54,3 @@ if __name__ == "__main__":
     app = wx.App(False)
     frame = CompletedPage(None, "Fitt's Law Project")
     app.MainLoop()
-
-
