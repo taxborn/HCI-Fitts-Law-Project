@@ -1,7 +1,9 @@
 import wx
+import math
 import webbrowser
 import itertools
 from random import shuffle
+import time
 import mouse
 from screeninfo import get_monitors
 from csv_data_collector import CSVDataCollector
@@ -79,7 +81,6 @@ class InformedConsentFrame(wx.Frame):
         self.Close()
 
     def on_start(self, event):
-        print("The experiment has started.")
         self.start_button.Hide()
         exp = Experiment(None, "Experiment")
         exp.Show()
@@ -90,16 +91,21 @@ class Experiment(wx.Frame):
         super(Experiment, self).__init__(parent, title=title, size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)))
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour(wx.Colour(49, 50, 68))
+        self.panel.Bind(wx.EVT_LEFT_DOWN, self.on_panel_click)
+
         self.button_data = generate_button_types()
         self.current_button_index = 0
         self.create_button()
         self.ShowFullScreen(True)
+        self.time = time.time()
 
         self.csv = CSVDataCollector()
 
     def create_button(self):
         # End of the experiment check
-        if self.current_button_index >= len(self.button_data): self.Close()
+        if self.current_button_index >= len(self.button_data) - 1: self.end_experiment()
+        # upadte the time
+        self.time = time.time()
         # Set the mouse position
         mouse.move(SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2)
         # Destruct the current button data
@@ -113,30 +119,54 @@ class Experiment(wx.Frame):
         button.SetPosition((pos_x, pos_y))
 
         button.Bind(wx.EVT_BUTTON, self.on_button_click)
-        # Increment the index
-        self.current_button_index += 1
 
     def on_button_click(self, event):
+        # button data
+        size, distance, side = self.button_data[self.current_button_index]
+        elapsed = time.time() - self.time
+        mouse_pos = mouse.get_position()
+        # Calculate where it should be on the screen
+        pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
+        # For the y-position, we need to subtract by half the size to actually center on the screen
+        pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2))         
+
+        traveled = math.sqrt((mouse_pos[0] - pos_x)**2 + (mouse_pos[1] - pos_y)**2)
         event.GetEventObject().Destroy()
-        self.csv.add_data(self.button_data[self.current_button_index][1],self.button_data[self.current_button_index][0],self.button_data[self.current_button_index][2],0,0,0)
-        if self.current_button_index == 320:
-            self.end_experiment()
+        self.csv.add_data(distance,size,side,elapsed,traveled,0)
+        # Increment the index
+        self.current_button_index += 1
         self.create_button()
+    
+    def on_panel_click(self, event):
+        # This only runs when we click outside of the box.
+        size, distance, side = self.button_data[self.current_button_index]
+        elapsed = time.time() - self.time
+        self.time = time.time()
+        # Calculate where it should be on the screen
+        pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
+        # For the y-position, we need to subtract by half the size to actually center on the screen
+        pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2))         
+        mouse_pos = mouse.get_position()
+
+        traveled = math.sqrt((mouse_pos[0] - pos_x)**2 + (mouse_pos[1] - pos_y)**2)
+        self.csv.add_data(distance,size,side,elapsed,traveled,1)
 
     def end_experiment(self):
-        self.csv.create_csv("Fitts Law Data.csv")
+        self.csv.create_csv("Fitts Law Data")
         self.Close()
 
 
 def generate_button_types() -> list[tuple[int, int, int]]:
+    # sizes = [256, 320]
     sizes = [128, 192, 256, 320]
-    distance = [300, 400, 500, 600]
+    distance = [500, 600]
+    # distance = [300, 400, 500, 600]
     side = [-1, 1] # -1 = left, 1 = right
 
     # Generate all possible combinations of size, distance, and direction for buttons
     all_combinations = list(itertools.product(sizes, distance, side))
     # Replicate the combinations list 10 times to create a larger pool of options
-    repeated_combinations = [all_combinations] * 10
+    repeated_combinations = [all_combinations]
     # Flatten the list of lists into a single list
     flattened_combinations = list(itertools.chain.from_iterable(repeated_combinations))
     # Shuffle the list to randomize the order of options

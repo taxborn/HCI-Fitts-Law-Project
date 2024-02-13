@@ -1,4 +1,5 @@
 import csv
+import random
 
 class CSVDataCollector():
 
@@ -14,17 +15,17 @@ class CSVDataCollector():
     '''
 
     def __init__(self):
-        self.data = [['Distance','Size','Direction','Time','Distance Traveled','Errors']]
+        self.data = [['Distance','Size','Direction','Time','Distance Traveled','Misclick']]
 
-    def add_data(self,distance,size,direction,time,distanceTraveled,errors):
-        self.data.append([distance,size,direction,time,distanceTraveled,errors])
+    def add_data(self,distance,size,direction,time,distanceTraveled,misclick):
+        self.data.append([distance,size,direction,time,distanceTraveled,misclick])
 
     def create_csv(self,fileName):
         fileCreated = False
-        fileNumber = 1
+        fileNumber = random.randint(1, 1000000) 
         while fileCreated == False:
             try:
-                with open(f"{fileNumber} - {fileName}",'x',newline='') as file:
+                with open(f"{fileNumber} - {fileName}.csv",'x',newline='') as file:
                     writer = csv.writer(file)
                     writer.writerows(self.data)
                     fileCreated = True
