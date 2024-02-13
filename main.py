@@ -177,8 +177,8 @@ class Experiment(wx.Frame):
             (mouse_pos[0] - self.pos_x) ** 2 + (mouse_pos[1] - self.pos_y) ** 2
         )
 
-        # reset the time
-        self.time = time.time()
+        # reset the time (maybe we shouldn't do this?)
+        # self.time = time.time()
         self.csv.add_data(distance, size, side, elapsed, traveled, 1)
 
 
