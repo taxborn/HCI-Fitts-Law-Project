@@ -6,7 +6,7 @@ class CompletedPage(wx.Frame):
         super(CompletedPage, self).__init__(parent, title=title, size=(800, 600))
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour(wx.Colour(0, 0, 0))
-        self.time = time
+        self.time = round(time, 3)
         self.initialize_ui()
         self.Centre()
         self.Show()
@@ -25,7 +25,7 @@ class CompletedPage(wx.Frame):
 
         message.SetForegroundColour((255, 255, 255))
         font = wx.Font(
-            20,
+            10,
             family=wx.FONTFAMILY_MODERN,
             style=0,
             weight=90,
