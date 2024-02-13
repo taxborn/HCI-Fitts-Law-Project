@@ -11,14 +11,14 @@ class CSVDataCollector:
     Size is the diameter of the button in pixels
     Direction is either left or right
     Time is the time in ms it took to click the button
-    Distance traveled is the amount of pixels traveled before clicking the button
+    Distance traveled is the amount of pixels traveled before clicking the button (the diagonal)
     Errors are any extra clicks not on the correct button
     """
 
     def __init__(self):
         # The header for the CSV
         self.data = [
-            ["Distance", "Size", "Direction", "Time", "Distance Traveled", "Misclick"]
+            ["Distance", "Size", "Direction", "Time", "Distance Traveled", "Errors"]
         ]
 
     def add_data(self, *args):

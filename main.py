@@ -8,11 +8,12 @@ from random import shuffle
 from screeninfo import get_monitors
 from csv_data_collector import CSVDataCollector
 
+BACKGROUND_COLOR = wx.Colour(49, 50, 68)
 SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
 BUTTON_SIZES = [64, 128, 196, 256]
 BUTTON_DISTANCES = [300, 400, 500, 600]
 BUTTON_SIDES = [-1, 1]  # -1 = left, 1 = right
-TRAILS_PER_CONFIGURATION = 10
+TRAILS_PER_CONFIGURATION = 1
 
 
 class InformedConsentFrame(wx.Frame):
@@ -23,7 +24,7 @@ class InformedConsentFrame(wx.Frame):
             size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)),
         )
         self.panel = wx.Panel(self)
-        self.panel.SetBackgroundColour(wx.Colour(49, 50, 68))
+        self.panel.SetBackgroundColour(BACKGROUND_COLOR)
         self.Centre()
         self.initialize_ui()
 
@@ -116,70 +117,73 @@ class Experiment(wx.Frame):
             title=title,
             size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)),
         )
-        self.panel = wx.Panel(self)
-        self.panel.SetBackgroundColour(wx.Colour(49, 50, 68))
-        self.panel.Bind(wx.EVT_LEFT_DOWN, self.on_panel_click)
-
+        self.initialize_ui()
+        self.csv = CSVDataCollector()
         self.button_data = generate_button_types()
         self.current_button_index = 0
-        self.create_button()
+        self.current_errors = 0
+        self.create_next_button()
         self.ShowFullScreen(True)
         self.time = time.time()
+    
+    def initialize_ui(self):
+        self.panel = wx.Panel(self)
+        self.panel.SetBackgroundColour(BACKGROUND_COLOR)
+        self.panel.Bind(wx.EVT_LEFT_DOWN, self.on_panel_click)
 
-        self.csv = CSVDataCollector()
+    @property
+    def current_button_data(self):
+        """Returns the current button's size, distance, and side as a tuple."""
+        return self.button_data[self.current_button_index]
 
-    def create_button(self):
-        # End of the experiment check
-        if self.current_button_index >= len(self.button_data) - 1:
-            self.csv.save("Fitts Law Data")
-            self.Close()
-
-        # update the time
-        self.time = time.time()
-        # Set the mouse position
+    def update_mouse_position(self):
+        # Set the mouse position to the center of the screen
         mouse.move(SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2)
-        # Destruct the current button data
-        size, distance, side = self.button_data[self.current_button_index]
-        # Create the button
-        self.button = wx.Button(self.panel, label=f" ", size=wx.Size(size, size))
+
+    def create_button(self, size, distance, side):
+        """Creates a button based on specified size, distance, and side."""
+        self.time = time.time()
+        self.button = wx.Button(self.panel, size=wx.Size(size, size))
+
         # Calculate where it should be on the screen
         self.pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
         # For the y-position, we need to subtract by half the size to actually center on the screen
         self.pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2))
         self.button.SetPosition((self.pos_x, self.pos_y))
 
+    def create_next_button(self):
+        self.current_errors = 0
+        # End of the experiment check
+        if self.current_button_index >= len(self.button_data) - 1:
+            self.csv.save("Fitts Law Data")
+            self.Close()
+            return
+
+        self.update_mouse_position()
+        self.create_button(*self.current_button_data)
         self.button.Bind(wx.EVT_BUTTON, self.on_button_click)
 
     def on_button_click(self, event):
-        # button data
-        size, distance, side = self.button_data[self.current_button_index]
-        elapsed = time.time() - self.time
+        """Handles button click events, records data, and prepares the next button."""
+        size, distance, side = self.current_button_data
+        elapsed_time = time.time() - self.time
         mouse_pos = mouse.get_position()
-        traveled = math.sqrt(
+        distance_traveled = math.sqrt(
             (mouse_pos[0] - self.pos_x) ** 2 + (mouse_pos[1] - self.pos_y) ** 2
         )
 
+        # Add the data to the CSV
+        self.csv.add_data(distance, size, side, elapsed_time, distance_traveled, self.current_errors)
         # Destroy the button
         event.GetEventObject().Destroy()
-        # Add the data to the CSV
-        self.csv.add_data(distance, size, side, elapsed, traveled, 0)
         # Increment the index
         self.current_button_index += 1
         # Create the next button
-        self.create_button()
+        self.create_next_button()
 
     def on_panel_click(self, event):
-        # This only runs when we click outside of the box.
-        size, distance, side = self.button_data[self.current_button_index]
-        elapsed = time.time() - self.time
-        mouse_pos = mouse.get_position()
-        traveled = math.sqrt(
-            (mouse_pos[0] - self.pos_x) ** 2 + (mouse_pos[1] - self.pos_y) ** 2
-        )
-
-        # reset the time (maybe we shouldn't do this?)
-        # self.time = time.time()
-        self.csv.add_data(distance, size, side, elapsed, traveled, 1)
+        """Increments the error count when the panel is clicked outside a button."""
+        self.current_errors += 1
 
 
 def generate_button_types() -> list[tuple[int, int, int]]:
