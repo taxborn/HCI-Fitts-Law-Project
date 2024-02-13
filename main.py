@@ -7,7 +7,6 @@ import itertools
 from random import shuffle
 from screeninfo import get_monitors
 from csv_data_collector import CSVDataCollector
-from completed_page import CompletedPage
 
 BACKGROUND_COLOR = wx.Colour(49, 50, 68)
 SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
@@ -157,8 +156,6 @@ class Experiment(wx.Frame):
         # End of the experiment check
         if self.current_button_index >= len(self.button_data) - 1:
             self.csv.save("Fitts Law Data")
-            end = CompletedPage(None,"CompletedPage")
-            end.Show()
             self.Close()
             return
 
