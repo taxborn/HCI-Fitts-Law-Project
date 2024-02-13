@@ -128,6 +128,26 @@ class Experiment(wx.Frame):
         self.create_next_button()
         self.ShowFullScreen(True)
         self.time = time.time()
+        self.fullTime = time.time()
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        message = wx.StaticText(
+            self.panel,
+            -1,
+            f"{self.current_button_index}/320",
+            style=wx.ALIGN_TOP,
+        )
+        message.SetForegroundColour((255, 255, 255))
+        font = wx.Font(
+            20,
+            family=wx.FONTFAMILY_MODERN,
+            style=0,
+            weight=90,
+            underline=False,
+            faceName="",
+            encoding=wx.FONTENCODING_DEFAULT,
+        )
+        message.SetFont(font)
+        vbox.Add(message, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 90)
 
     def initialize_ui(self):
         self.panel = wx.Panel(self)
@@ -159,7 +179,7 @@ class Experiment(wx.Frame):
         # End of the experiment check
         if self.current_button_index >= len(self.button_data) - 1:
             self.csv.save("Fitts Law Data")
-            end = CompletedPage(None, "CompletedPage")
+            end = CompletedPage(None, "CompletedPage", time.time() - self.time)
             end.Show()
             self.Close()
             return
@@ -185,6 +205,25 @@ class Experiment(wx.Frame):
         event.GetEventObject().Destroy()
         # Increment the index
         self.current_button_index += 1
+        vbox = wx.BoxSizer(wx.VERTICAL)
+        message = wx.StaticText(
+            self.panel,
+            -1,
+            f"{self.current_button_index}/320",
+            style=wx.ALIGN_TOP,
+        )
+        message.SetForegroundColour((255, 255, 255))
+        font = wx.Font(
+            20,
+            family=wx.FONTFAMILY_MODERN,
+            style=0,
+            weight=90,
+            underline=False,
+            faceName="",
+            encoding=wx.FONTENCODING_DEFAULT,
+        )
+        message.SetFont(font)
+        vbox.Add(message, 0, wx.EXPAND | wx.LEFT | wx.RIGHT | wx.TOP, 90)
         # Create the next button
         self.create_next_button()
 

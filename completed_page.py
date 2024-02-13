@@ -2,10 +2,11 @@ import wx
 
 
 class CompletedPage(wx.Frame):
-    def __init__(self, parent, title):
+    def __init__(self, parent, title, time):
         super(CompletedPage, self).__init__(parent, title=title, size=(800, 600))
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour(wx.Colour(0, 0, 0))
+        self.time = time
         self.initialize_ui()
         self.Centre()
         self.Show()
@@ -16,8 +17,9 @@ class CompletedPage(wx.Frame):
         message = wx.StaticText(
             self.panel,
             -1,
-            "Congratulations! You have completed the Fitts' Law Experiment.\n "
-            "Thank you for your participation!",
+            f"Congrats! You have completed the Fitts' Law Experiment.\n "
+            f"Thank you for your participation!\n"
+            f"Total time: {self.time} seconds.",
             style=wx.ALIGN_CENTER,
         )
 
