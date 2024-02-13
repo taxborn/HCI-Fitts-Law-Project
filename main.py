@@ -1,36 +1,49 @@
 import wx
 import math
+import time
+import mouse
 import webbrowser
 import itertools
 from random import shuffle
-import time
-import mouse
 from screeninfo import get_monitors
 from csv_data_collector import CSVDataCollector
 
 SCREEN_SIZE = get_monitors()[0].width, get_monitors()[0].height
+BUTTON_SIZES = [64, 128, 196, 256]
+BUTTON_DISTANCES = [300, 400, 500, 600]
+BUTTON_SIDES = [-1, 1]  # -1 = left, 1 = right
+TRAILS_PER_CONFIGURATION = 1
+
 
 class InformedConsentFrame(wx.Frame):
     def __init__(self, parent, title):
-        super(InformedConsentFrame, self).__init__(parent, title=title, size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)))
+        super(InformedConsentFrame, self).__init__(
+            parent,
+            title=title,
+            size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)),
+        )
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour(wx.Colour(49, 50, 68))
-        self.current_button = None
-        self.last_button = None
-        self.initialize_ui()
         self.Centre()
+        self.initialize_ui()
 
     def initialize_ui(self):
-        #vertical boxsizer which contains all the buttons
+        # vertical boxsizer which contains all the buttons
         vbox = wx.BoxSizer(wx.VERTICAL)
 
-        # use to size the start button so that is is always in the center of the screen 
+        # use to size the start button so that is is always in the center of the screen
         vbox.Add(-1, 1, wx.EXPAND)
 
         # Button to open the consent form PDF
-        self.consent_form_button = wx.Button(self.panel, label="Open Consent Form", size=(150, 50))
+        self.consent_form_button = wx.Button(
+            self.panel, label="Open Consent Form", size=(150, 50)
+        )
         self.consent_form_button.Bind(wx.EVT_BUTTON, self.on_open_consent_form)
-        vbox.Add(self.consent_form_button, flag=wx.ALIGN_CENTER_HORIZONTAL | wx.TOP, border=10)
+        vbox.Add(
+            self.consent_form_button,
+            flag=wx.ALIGN_CENTER_HORIZONTAL | wx.TOP,
+            border=10,
+        )
 
         # Horizontal box sizer for 'I Agree' and 'No, I do not wish to continue' buttons
         hbox = wx.BoxSizer(wx.HORIZONTAL)
@@ -42,7 +55,9 @@ class InformedConsentFrame(wx.Frame):
         self.agree_button.Hide()
 
         # 'No, I do not wish to continue' button (hidden initially)
-        self.disagree_button = wx.Button(self.panel, label="I do not wish to continue", size=(150, 50))
+        self.disagree_button = wx.Button(
+            self.panel, label="I do not wish to continue", size=(150, 50)
+        )
         self.disagree_button.Bind(wx.EVT_BUTTON, self.on_disagree)
         hbox.Add(self.disagree_button)
         self.disagree_button.Hide()
@@ -62,14 +77,17 @@ class InformedConsentFrame(wx.Frame):
         self.panel.SetSizer(vbox)
 
     def on_open_consent_form(self, event):
-        consent_form_path = "Sample Fitts' Law Informed Consent.pdf"
-        webbrowser.open(consent_form_path)
+        webbrowser.open("Sample Fitts' Law Informed Consent.pdf")
         self.agree_button.Show()
         self.disagree_button.Show()
         self.panel.Layout()
 
     def on_agree(self, event):
-        wx.MessageBox("Thanks for participating. We can start the experiment now.", "Consent Acknowledged", wx.OK | wx.ICON_INFORMATION)
+        wx.MessageBox(
+            "Thanks for participating. We can start the experiment now.",
+            "Consent Acknowledged",
+            wx.OK | wx.ICON_INFORMATION,
+        )
         self.consent_form_button.Hide()
         self.agree_button.Hide()
         self.disagree_button.Hide()
@@ -77,7 +95,11 @@ class InformedConsentFrame(wx.Frame):
         self.panel.Layout()
 
     def on_disagree(self, event):
-        wx.MessageBox("We understand your choice.", "Consent Not Given", wx.OK | wx.ICON_INFORMATION)
+        wx.MessageBox(
+            "We understand your choice.",
+            "Consent Not Given",
+            wx.OK | wx.ICON_INFORMATION,
+        )
         self.Close()
 
     def on_start(self, event):
@@ -86,9 +108,14 @@ class InformedConsentFrame(wx.Frame):
         exp.Show()
         self.Close()
 
+
 class Experiment(wx.Frame):
     def __init__(self, parent, title):
-        super(Experiment, self).__init__(parent, title=title, size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)))
+        super(Experiment, self).__init__(
+            parent,
+            title=title,
+            size=(int(SCREEN_SIZE[0] * 0.75), int(SCREEN_SIZE[1] * 0.75)),
+        )
         self.panel = wx.Panel(self)
         self.panel.SetBackgroundColour(wx.Colour(49, 50, 68))
         self.panel.Bind(wx.EVT_LEFT_DOWN, self.on_panel_click)
@@ -103,76 +130,70 @@ class Experiment(wx.Frame):
 
     def create_button(self):
         # End of the experiment check
-        if self.current_button_index >= len(self.button_data) - 1: self.end_experiment()
-        # upadte the time
+        if self.current_button_index >= len(self.button_data) - 1:
+            self.csv.save("Fitts Law Data")
+            self.Close()
+
+        # update the time
         self.time = time.time()
         # Set the mouse position
         mouse.move(SCREEN_SIZE[0] // 2, SCREEN_SIZE[1] // 2)
         # Destruct the current button data
         size, distance, side = self.button_data[self.current_button_index]
         # Create the button
-        button = wx.Button(self.panel, label=f" ", size=wx.Size(size, size))
+        self.button = wx.Button(self.panel, label=f" ", size=wx.Size(size, size))
         # Calculate where it should be on the screen
-        pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
+        self.pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
         # For the y-position, we need to subtract by half the size to actually center on the screen
-        pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2)) 
-        button.SetPosition((pos_x, pos_y))
+        self.pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2))
+        self.button.SetPosition((self.pos_x, self.pos_y))
 
-        button.Bind(wx.EVT_BUTTON, self.on_button_click)
+        self.button.Bind(wx.EVT_BUTTON, self.on_button_click)
 
     def on_button_click(self, event):
         # button data
         size, distance, side = self.button_data[self.current_button_index]
         elapsed = time.time() - self.time
         mouse_pos = mouse.get_position()
-        # Calculate where it should be on the screen
-        pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
-        # For the y-position, we need to subtract by half the size to actually center on the screen
-        pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2))         
+        traveled = math.sqrt(
+            (mouse_pos[0] - self.pos_x) ** 2 + (mouse_pos[1] - self.pos_y) ** 2
+        )
 
-        traveled = math.sqrt((mouse_pos[0] - pos_x)**2 + (mouse_pos[1] - pos_y)**2)
+        # Destroy the button
         event.GetEventObject().Destroy()
-        self.csv.add_data(distance,size,side,elapsed,traveled,0)
+        # Add the data to the CSV
+        self.csv.add_data(distance, size, side, elapsed, traveled, 0)
         # Increment the index
         self.current_button_index += 1
+        # Create the next button
         self.create_button()
-    
+
     def on_panel_click(self, event):
         # This only runs when we click outside of the box.
         size, distance, side = self.button_data[self.current_button_index]
         elapsed = time.time() - self.time
-        self.time = time.time()
-        # Calculate where it should be on the screen
-        pos_x = int(side * distance + SCREEN_SIZE[0] // 2)
-        # For the y-position, we need to subtract by half the size to actually center on the screen
-        pos_y = int(SCREEN_SIZE[1] // 2 - (size // 2))         
         mouse_pos = mouse.get_position()
+        traveled = math.sqrt(
+            (mouse_pos[0] - self.pos_x) ** 2 + (mouse_pos[1] - self.pos_y) ** 2
+        )
 
-        traveled = math.sqrt((mouse_pos[0] - pos_x)**2 + (mouse_pos[1] - pos_y)**2)
-        self.csv.add_data(distance,size,side,elapsed,traveled,1)
-
-    def end_experiment(self):
-        self.csv.create_csv("Fitts Law Data")
-        self.Close()
+        # reset the time
+        self.time = time.time()
+        self.csv.add_data(distance, size, side, elapsed, traveled, 1)
 
 
 def generate_button_types() -> list[tuple[int, int, int]]:
-    # sizes = [256, 320]
-    sizes = [128, 192, 256, 320]
-    distance = [500, 600]
-    # distance = [300, 400, 500, 600]
-    side = [-1, 1] # -1 = left, 1 = right
-
     # Generate all possible combinations of size, distance, and direction for buttons
-    all_combinations = list(itertools.product(sizes, distance, side))
+    all_combinations = list(
+        itertools.product(BUTTON_SIZES, BUTTON_DISTANCES, BUTTON_SIDES)
+    )
     # Replicate the combinations list 10 times to create a larger pool of options
-    repeated_combinations = [all_combinations]
-    # Flatten the list of lists into a single list
-    flattened_combinations = list(itertools.chain.from_iterable(repeated_combinations))
+    repeated_combinations = all_combinations * TRAILS_PER_CONFIGURATION
     # Shuffle the list to randomize the order of options
-    shuffle(flattened_combinations)
+    shuffle(repeated_combinations)
 
-    return flattened_combinations
+    return repeated_combinations
+
 
 if __name__ == "__main__":
     app = wx.App(False)
